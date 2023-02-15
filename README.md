@@ -4,7 +4,24 @@ Segregation analysis studies the distribution of genetic variants within and bet
 
 segcpp inputs one or more uncompressed vcf files and a single pedigree file, and outputs a tab-separated file with all the information needed to analyze variant segregation in families
 
-## command-line arguments
+## Contents
+[Command-line arguments](#command-line-arguments)  
+
+[General concepts](#general-concepts)  
+
+[File inputs](#file-inputs)  
+
+[Other arguments](#other-arguments)  
+
+[Understanding outputs](#understanding-outputs)  
+
+[Software requirements](#software-requirements)  
+
+[System requirements](#system-requirements)  
+
+[Miscellaneous](#miscellaneous)  
+
+## Command-line arguments
 ```
 Input/output parameters:
   -v [ --vcf-file ] arg                 vcf input file(s) and optional filters. 
@@ -46,7 +63,7 @@ General options:
   --version                             print program version and details and exit
 ```
 
-## general concepts
+## General concepts
 
 #### family-variant:  
 The basic unit of information in the program output is a family-variant, i.e. a single variant in a single family. A variant is defined by a unique combination of a single chromosome, position, reference allele and alternate allele. A family is defined by the first column of the input pedigree file. Each row of the program outputs corresponds to a single family-variant. This means that if a variant is present in >1 family (as defined by the pedigree file), then that variant will appear on a separate row for each of the families that contain this variant.
@@ -60,11 +77,11 @@ segcpp allows for a measure of QC by giving users the option of filtering indivi
 
 Filtering a sample genotype does *not* mean that it will be removed from the final outputs. Instead, if a given sample genotype fails to meet the appropriate filters for a given variant, its genotype will appear with the prefix "Filtered". So for example a heterzygous genotype which fails to meet the filtering criteria will appear as "Filtered Heterozygote". Note that "Filtered" genotypes are counted separately in the variant counting columns of the program's output (see [below](#sample-counts-and-ids))
 
-## file inputs
+## File inputs
 * vcf file: [Standard VCF format](https://samtools.github.io/hts-specs/VCFv4.2.pdf) containing list of variants, sample genotypes and associated annotations. Can be specified more than once. File-specific filters can also be specified here (see [below](#genotype-filtering-arguments))
 * ped file: [Standard pedigree file format](https://gatk.broadinstitute.org/hc/en-us/articles/360035531972-PED-Pedigree-format), with no header
 
-## other arguments
+## Other arguments
 
 #### genotype filtering arguments
 Filters must be set separately for affected samples ("probands"), in-family non-affecteds ("familial controls") and non-family non-affecteds ("external controls"). For more fine-grained control each of these values can be set separately for each input vcf file, using the --vcf-file:[additional filters] notation as in the [above section](#command-line-arguments). If doing so, the additional filters *must* be supplied in the order [above](#filtering), in the form
@@ -84,7 +101,7 @@ More generally, to prevent fatal file format-based warnings, use the `--use-form
 By default, segcpp will only output a family-variant line if that variant appears in at least one proband in that family. Use the `--show-all-variants` if you wish instead to display *all* variants which appear in *any* family sample regardless of clinical status. NOTE: if performing a [case-control study](#case-control-studies), use this option.
 
 
-## understanding outputs
+## Understanding outputs
 
 The output file columns fall into several unofficial categories, which appear in the following order from left to right:  
 
@@ -113,13 +130,13 @@ The last set of columns provide sample-specific information extracted from the v
 
 Subsequent sets of six columns present the same six pieces of information for each family sample, in the order listed in the "Family members" column. If a sample's six columns are blank this means that there was no call for that variant in that sample. Note that there are no column headers for all samples after the first one.
 
-## software requirements
+## Software requirements
 
 As segcpp is written in C++, it must be compiled locally. This requires a compiler such as GNU make, as well as the boost portable C++ libraries.  
 
 Additionally, the helper script scripts/format_vep.sh requires a local version of bcftools, with the split-vep plugin installed, and with the bcftools executable in the user's $PATH environment variable
 
-## system requirements
+## System requirements
 
 segcpp does not support multithreading, so it only requires a single CPU to run.
 
@@ -127,6 +144,6 @@ However, memory requirements scale with the number of variants in probands (or i
 
 Should the analysis require more resources than are available, we recommend splitting vcf inputs and running segcpp on each piece.
 
-## miscellaneous
+## Miscellaneous
 #### case-control studies
 While segcpp was designed with familial analyses in mind, it can easily accomodate case-control studies as well. To do so, simply set up your pedigree file such that all samples have the same familyId, with cases having the phenotype "affected" (2) and controls having the phenotype "unaffected" (1). Run segcpp with the `--show-all-variants` switch. The counting columns should provide the necessary raw inputs for subsequent statistical analyses.
